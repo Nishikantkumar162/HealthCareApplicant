@@ -2,29 +2,44 @@ name: Docker Fullstack CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      # Public username for debugging (non-secret). Replace with the username that logs in successfully.
+      PUBLIC_DOCKER_USER: nishikantkumar
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Check DockerHub Secrets
+      - name: Verify Secrets Exist
         run: |
+          # If secrets are missing this will fail early.
           if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-            echo "❌ DOCKERHUB_USERNAME is missing"
+            echo "ERROR: secrets.DOCKERHUB_USERNAME is empty"
             exit 1
           fi
           if [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
-            echo "❌ DOCKERHUB_TOKEN is missing"
+            echo "ERROR: secrets.DOCKERHUB_TOKEN is empty"
             exit 1
           fi
-          echo "✅ DockerHub secrets are available"
+          echo "Secrets appear set (values are masked)."
+
+      - name: Debug tag composition (safe)
+        run: |
+          echo "Public tag (visible): ${PUBLIC_DOCKER_USER}/healthcare-backend:latest"
+          # Show the literal expansion we will use for build (secret part will be masked in logs, but the presence/format is visible)
+          echo "Constructed secret-based tag (masked content will appear as ***)"
+          echo " -> \${{ secrets.DOCKERHUB_USERNAME }}/healthcare-backend:latest"
+          echo " -> \${{ secrets.DOCKERHUB_USERNAME }}/healthcare-backend:${{ github.sha }}"
+          # Print current working dir and list backend dir to ensure dockerfile exists
+          echo "PWD: $(pwd)"
+          echo "Backend files:"
+          ls -la backend || true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -35,22 +50,31 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/backend.Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-backend:${{ github.sha }}
+      - name: Build and push backend image (explicit docker buildx command)
+        env:
+          USER_FROM_SECRET: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          # Buildx command that we control explicitly. This will show exactly the tags passed.
+          echo "Building tags (secret username is masked in logs):"
+          echo "  ${USER_FROM_SECRET}/healthcare-backend:latest"
+          echo "  ${USER_FROM_SECRET}/healthcare-backend:${{ github.sha }}"
+          docker buildx build \
+            --push \
+            --file ./backend/backend.Dockerfile \
+            --tag "${USER_FROM_SECRET}/healthcare-backend:latest" \
+            --tag "${USER_FROM_SECRET}/healthcare-backend:${{ github.sha }}" \
+            ./backend
 
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/frontend.Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-frontend:${{ github.sha }}
+      - name: Build and push frontend image (explicit docker buildx command)
+        env:
+          USER_FROM_SECRET: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          echo "Building frontend tags:"
+          echo "  ${USER_FROM_SECRET}/healthcare-frontend:latest"
+          echo "  ${USER_FROM_SECRET}/healthcare-frontend:${{ github.sha }}"
+          docker buildx build \
+            --push \
+            --file ./frontend/frontend.Dockerfile \
+            --tag "${USER_FROM_SECRET}/healthcare-frontend:latest" \
+            --tag "${USER_FROM_SECRET}/healthcare-frontend:${{ github.sha }}" \
+            ./frontend
