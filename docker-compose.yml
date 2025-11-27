@@ -28,14 +28,14 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
-      - '8080:8080'
+      - '2025:2025'
 
   frontend:
     build: ./frontend
     depends_on:
       - backend
     environment:
-      VITE_API_BASE_URL: http://localhost:8080/api
+      VITE_API_BASE_URL: http://localhost:2025/api
     ports:
       - '5173:80'
 

@@ -1,6 +1,6 @@
 ## Local setup checklist
 
-1. Install Java 17, Maven, Node 20+, Docker Desktop.
+1. Install Java 21, Maven, Node 20+, Docker Desktop.
 2. Start MySQL via Docker compose (recommended) or configure manually and update `SPRING_DATASOURCE_URL`.
 3. Backend:
    - `cd backend`

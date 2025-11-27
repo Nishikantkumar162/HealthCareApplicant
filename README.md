@@ -25,7 +25,7 @@ SPRING_DATASOURCE_PASSWORD=root
 APP_JWT_SECRET=TXlTdXBlclNlY3JldEtleUhlYWx0aENhcmU=
 ```
 
-Swagger UI: `http://localhost:8080/swagger-ui.html`
+Swagger UI: `http://localhost:2025/swagger-ui.html`
 
 ### Frontend
 
@@ -43,7 +43,7 @@ docker compose up --build
 Services:
 
 - MySQL on `localhost:3307`
-- Backend on `localhost:8080`
+- Backend on `localhost:2025`
 - Frontend on `http://localhost:5173`
 
 ### GitHub Actions CI/CD
