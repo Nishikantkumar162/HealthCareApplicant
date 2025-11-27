@@ -11,17 +11,34 @@ const RegisterPatient = () => {
     address: ''
   });
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await client.post('/auth/register/patient', form);
-    setMessage('Registration successful. You can login now.');
-    setTimeout(() => navigate('/login'), 1500);
+    setError('');
+    setMessage('');
+    
+    try {
+      await client.post('/auth/register/patient', form);
+      setMessage('Registration successful. You can login now.');
+      setTimeout(() => navigate('/login'), 1500);
+    } catch (err) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.data?.errors) {
+        // Handle multiple validation errors
+        const errorMessages = Object.values(err.response.data.errors).join(', ');
+        setError(errorMessages);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    }
   };
 
   return (
@@ -42,7 +59,8 @@ const RegisterPatient = () => {
         <input name="address" placeholder="Address" value={form.address} onChange={handleChange} />
         <button type="submit">Register</button>
       </form>
-      {message && <p>{message}</p>}
+      {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+      {message && <p style={{ color: 'green', marginTop: '1rem' }}>{message}</p>}
     </div>
   );
 };

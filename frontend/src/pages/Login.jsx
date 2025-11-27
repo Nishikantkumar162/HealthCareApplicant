@@ -10,17 +10,20 @@ const Login = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       const data = await login(form);
       if (data.role === 'ROLE_ADMIN') navigate('/admin');
       if (data.role === 'ROLE_DOCTOR') navigate('/doctor');
       if (data.role === 'ROLE_PATIENT') navigate('/patient');
     } catch (err) {
-      setError('Invalid credentials');
+      const errorMessage = err.response?.data?.message || err.message || 'Invalid credentials. Please try again.';
+      setError(errorMessage);
     }
   };
 
@@ -37,7 +40,7 @@ const Login = () => {
           onChange={handleChange}
           required
         />
-        {error && <span style={{ color: 'crimson' }}>{error}</span>}
+        {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
         <button type="submit">Login</button>
       </form>
       <p>

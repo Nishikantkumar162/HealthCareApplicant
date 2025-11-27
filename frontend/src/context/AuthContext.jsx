@@ -10,11 +10,19 @@ export const AuthProvider = ({ children }) => {
   });
 
   const login = async (credentials) => {
-    const { data } = await client.post('/auth/login', credentials);
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data));
-    setUser(data);
-    return data;
+    try {
+      const { data } = await client.post('/auth/login', credentials);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data));
+      setUser(data);
+      return data;
+    } catch (error) {
+      // Re-throw with a more user-friendly message if available
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
   };
 
   const logout = () => {

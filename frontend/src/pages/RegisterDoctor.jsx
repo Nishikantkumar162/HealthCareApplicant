@@ -10,15 +10,32 @@ const RegisterDoctor = () => {
     hospital: ''
   });
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await client.post('/auth/register/doctor', form);
-    setMessage('Registration received. Admin approval pending.');
+    setError('');
+    setMessage('');
+    
+    try {
+      await client.post('/auth/register/doctor', form);
+      setMessage('Registration received. Admin approval pending.');
+    } catch (err) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.data?.errors) {
+        // Handle multiple validation errors
+        const errorMessages = Object.values(err.response.data.errors).join(', ');
+        setError(errorMessages);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    }
   };
 
   return (
@@ -45,7 +62,8 @@ const RegisterDoctor = () => {
         <input name="hospital" placeholder="Hospital" value={form.hospital} onChange={handleChange} />
         <button type="submit">Register</button>
       </form>
-      {message && <p>{message}</p>}
+      {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+      {message && <p style={{ color: 'green', marginTop: '1rem' }}>{message}</p>}
     </div>
   );
 };

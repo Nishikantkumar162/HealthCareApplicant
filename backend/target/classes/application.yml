@@ -3,15 +3,18 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/healthcare?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/healthcare?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
-    password: root
+    password: "Nishi@82280"
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
     show-sql: false
   mail:
     host: smtp.example.com
@@ -27,7 +30,7 @@ spring:
 
 app:
   jwt:
-    secret: TXlTdXBlclNlY3JldEtleUhlYWx0aENhcmU=
+    secret: lJPLWsHl7OzekNf0wOoZSDa0XtBCwn8ZWHG29VED+adsdyP66QJPOgUDSIygJC1CbblLiAJoBo+WcNgRJd+nYA==
     expiration-ms: 86400000
 
 logging:
