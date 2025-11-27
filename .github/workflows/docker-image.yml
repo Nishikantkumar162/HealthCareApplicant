@@ -30,8 +30,8 @@ jobs:
             --platform linux/amd64 \
             -t $BACKEND_IMAGE:${{ github.sha }} \
             -t $BACKEND_IMAGE:latest \
-            backend \
-            --push
+            --push \
+            backend
 
   frontend:
     runs-on: ubuntu-latest
@@ -54,5 +54,5 @@ jobs:
             --platform linux/amd64 \
             -t $FRONTEND_IMAGE:${{ github.sha }} \
             -t $FRONTEND_IMAGE:latest \
-            frontend \
-            --push
+            --push \
+            frontend
