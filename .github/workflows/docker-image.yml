@@ -25,13 +25,14 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build & push backend image
+        # This format is safer: options on continued lines, context on the final line
         run: |
           docker buildx build \
             --platform linux/amd64 \
             -t $BACKEND_IMAGE:${{ github.sha }} \
             -t $BACKEND_IMAGE:latest \
             --push \
-            backend
+            ./backend  # Ensure the build context (directory) is correctly referenced
 
   frontend:
     runs-on: ubuntu-latest
@@ -55,4 +56,4 @@ jobs:
             -t $FRONTEND_IMAGE:${{ github.sha }} \
             -t $FRONTEND_IMAGE:latest \
             --push \
-            frontend
+            ./frontend # Ensure the build context (directory) is correctly referenced
