@@ -1,4 +1,4 @@
-## Healthcare Appointment System
+ ## Healthcare Appointment System
 
 End-to-end appointment platform covering patients, doctors and admins with JWT auth, role-based APIs, React frontend, Spring Boot backend, MySQL storage, Docker orchestration and CI/CD via GitHub Actions.
 

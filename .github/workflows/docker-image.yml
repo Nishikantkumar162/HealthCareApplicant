@@ -2,58 +2,51 @@ name: Docker Fullstack CI
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    branches: [ main ]
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKER_USERNAME: nishikantkumar
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      - name: Verify Secrets Exist
+        run: |
+          if [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "ERROR: DOCKERHUB_TOKEN is missing"
+            exit 1
+          fi
+          echo "Token secret exists."
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Validate Docker Hub credentials
-        run: |
-          if [ -z "$DOCKERHUB_USERNAME" ] || [ "$DOCKERHUB_USERNAME" = "" ]; then
-            echo "Error: DOCKERHUB_USERNAME secret is not set or is empty"
-            exit 1
-          fi
-          if [ -z "$DOCKERHUB_TOKEN" ] || [ "$DOCKERHUB_TOKEN" = "" ]; then
-            echo "Error: DOCKERHUB_TOKEN secret is not set or is empty"
-            exit 1
-          fi
-          echo "Docker Hub username validated: ${DOCKERHUB_USERNAME}"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ env.DOCKER_USERNAME }}        # PUBLIC USERNAME
+          password: ${{ secrets.DOCKERHUB_TOKEN }}     # SECRET TOKEN
 
       - name: Build and push backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/backend.Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-backend:${{ github.sha }}
+        run: |
+          echo "Using username: ${DOCKER_USERNAME}"
+          docker buildx build \
+            --push \
+            --file ./backend/backend.Dockerfile \
+            --tag "${DOCKER_USERNAME}/healthcare-backend:latest" \
+            --tag "${DOCKER_USERNAME}/healthcare-backend:${{ github.sha }}" \
+            ./backend
 
       - name: Build and push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/frontend.Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/healthcare-frontend:${{ github.sha }}
+        run: |
+          echo "Using username: ${DOCKER_USERNAME}"
+          docker buildx build \
+            --push \
+            --file ./frontend/frontend.Dockerfile \
+            --tag "${DOCKER_USERNAME}/healthcare-frontend:latest" \
+            --tag "${DOCKER_USERNAME}/healthcare-frontend:${{ github.sha }}" \
+            ./frontend
