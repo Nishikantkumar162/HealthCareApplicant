@@ -13,7 +13,7 @@ services:
       - springboot-mysql-net
 
   backend:
-    image: nishikantkumar/docker-backend:latest
+    image: nishikantkumar/healthcare-backend:latest
     container_name: springboot
     ports:
       - "2025:2025"
@@ -24,7 +24,7 @@ services:
       - springboot-mysql-net
 
   frontend:
-    image: nishikantkumar/docker-frontend:latest
+    image: nishikantkumar/healthcare-frontend:latest
     container_name: react
     ports:
       - "5173:5173"
