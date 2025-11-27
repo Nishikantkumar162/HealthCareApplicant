@@ -1,45 +1,41 @@
-version: '3.9'
-
 services:
-  db:
-    image: mysql:8.0
-    restart: always
+  mysqldb:
+    image: mysql:8
+    container_name: mysql-db
     environment:
       MYSQL_ROOT_PASSWORD: Nishi@82280
       MYSQL_DATABASE: healthcare
     ports:
-      - '3307:3306'
+      - "3306:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - mysql_data:/var/lib/mysql
+    networks:
+      - springboot-mysql-net
 
   backend:
-    build: ./backend
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/healthcare?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Nishi@82280
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      APP_JWT_SECRET: lJPLWsHl7OzekNf0wOoZSDa0XtBCwn8ZWHG29VED+adsdyP66QJPOgUDSIygJC1CbblLiAJoBo+WcNgRJd+nYA==
+    image: nishikantkumar/docker-backend:latest
+    container_name: springboot
     ports:
-      - '2025:2025'
+      - "2025:2025"
+    depends_on:
+      - mysqldb
+    restart: on-failure
+    networks:
+      - springboot-mysql-net
 
   frontend:
-    build: ./frontend
+    image: nishikantkumar/docker-frontend:latest
+    container_name: react
+    ports:
+      - "5173:5173"
     depends_on:
       - backend
-    environment:
-      VITE_API_BASE_URL: http://localhost:2025/api
-    ports:
-      - '5173:80'
+    restart: on-failure
+    networks:
+      - springboot-mysql-net
 
 volumes:
-  mysql-data:
+  mysql_data:
 
+networks:
+  springboot-mysql-net:
