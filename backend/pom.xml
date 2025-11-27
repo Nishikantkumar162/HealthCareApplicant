@@ -81,14 +81,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>3.3.4</version>
+            <configuration>
+                <mainClass>com.healthcare.appointment.HealthcareAppointmentApplication</mainClass>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>
 
